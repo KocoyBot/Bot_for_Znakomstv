@@ -1,13 +1,13 @@
-TELEBOT_TOKEN = '' # Токен для подключения к телеграмм боту
-API_KEY = ''  # АПИ КЛЮЧ нужен для использования Yandex Cloud API
-FOLDER_ID = ''  # Айди каталога нужен тоже для использования Yandex Cloud API
-PATH = '/home/имя_пользователя/Bot_for_Znakomstv/'  # Путь от корневой дерриктории линукса до папки проекта
-LOGS = f'{PATH}logs.txt'  # файл логов
-DB_NAME = f'{PATH}database.db'  #  файл базы данных
-PICTURE = f'{PATH}pictures/'  # папка с фотографиями
+TELEBOT_TOKEN = '' # Token for connecting to a Telegram bot
+API_KEY = ''  # API key is needed to use the Yandex Cloud API
+FOLDER_ID = ''  # The directory ID is also required to use the Yandex Cloud API
+PATH = '/home/имя_пользователя/Bot_for_Znakomstv/'  # The path from the root directory of Linux to the project folder
+LOGS = f'{PATH}logs.txt'  # logs file
+DB_NAME = f'{PATH}database.db'  # database file
+PICTURE = f'{PATH}pictures/'  # folder with pictures
 
 
-"""Системные промпты для работы нейросети 1) - Для генерации; 2) - Для предложения тем"""
+"""System prompts for the GPT operation 1) - For generation; 2) - For proposing topics"""
 
 system_prompts = ['Ты - профессиональный анкетёр, ты работаешь в крупной компании по написанию анкет для людей, которые хотят знакомиться, напиши анкету по информации от пользователя. '
                   'Пиши анкету от имени пользователя, также пиши текстом, пиши только о пользователе, своего ничего не придумывай, не задавай никаких вопросов.'
