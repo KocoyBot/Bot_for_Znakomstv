@@ -122,7 +122,7 @@ def how_picture(message):
             bot.register_next_step_handler(message, how_picture)
             return
         
-        src = 'pictures/' + str(message.from_user.id) + os.path.splitext(bot.get_file(message.photo[-1].file_id).file_path)[1]
+        src = config.PICTURE + str(message.from_user.id) + os.path.splitext(bot.get_file(message.photo[-1].file_id).file_path)[1]
         
         with open(src, 'wb') as new_file:
             new_file.write(bot.download_file(bot.get_file(message.photo[-1].file_id).file_path))
