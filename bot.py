@@ -326,7 +326,7 @@ def answ_estimation(message):
             with open(db.get_data(message.from_user.id)[4], 'rb') as ph:
                 bot.send_photo(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], ph, caption=db.get_data(message.from_user.id)[7] + "\n\nВзаимная симпатия с этим пользователем. Ссылка на него: t.me/" + bot.get_chat_member(message.from_user.id, message.from_user.id).user.username)
 
-            bot.send_message(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], anketas.themes(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = '{message.from_user.id}' LIMIT 1")[0])[7], db.get_data(message.from_user.id)[7]))
+            bot.send_message(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], anketas.themes(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], db.get_data(message.from_user.id)[7]))
 
             db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ? AND `id_tg` = ?", (message.from_user.id, str(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id))[0])))
             del db
