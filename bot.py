@@ -14,12 +14,12 @@ users = {}
 bot = telebot.TeleBot(config.TELEBOT_TOKEN)
 
 def create_buttons(*args):
-  """
-  This function create_buttons(*args) creates a custom keyboard markup with buttons based on the input arguments. 
-  It uses the ReplyKeyboardMarkup class with resizing enabled to construct the markup. 
-  For each argument provided, a new KeyboardButton is created and added to the markup. 
-  If an exception occurs during the process, it logs the error and returns nothing.
-  """
+    """
+    This function create_buttons(*args) creates a custom keyboard markup with buttons based on the input arguments. 
+    It uses the ReplyKeyboardMarkup class with resizing enabled to construct the markup. 
+    For each argument provided, a new KeyboardButton is created and added to the markup. 
+    If an exception occurs during the process, it logs the error and returns nothing.
+    """
     try:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         for i in args:
@@ -31,14 +31,14 @@ def create_buttons(*args):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-  """
-  This function start(message) is a handler for the command "/start". 
-  It first initializes a global variable users and a UsersDatabaseManager object using the config.DB_NAME. 
-  It checks if the user's id is already in the 'users' table of the database. 
-  If the user exists in the database, it sends a message to continue using the bot with custom buttons for different actions. 
-  If the user is new, it initializes a new entry for the user in the users dictionary, asks for the user's name, and registers the next step handler how_name.
-  In case of any exceptions during the process, it logs the error, sends the error message to the user with custom buttons to start again ("/start").
-  """
+    """
+    This function start(message) is a handler for the command "/start". 
+    It first initializes a global variable users and a UsersDatabaseManager object using the config.DB_NAME. 
+    It checks if the user's id is already in the 'users' table of the database. 
+    If the user exists in the database, it sends a message to continue using the bot with custom buttons for different actions. 
+    If the user is new, it initializes a new entry for the user in the users dictionary, asks for the user's name, and registers the next step handler how_name.
+    In case of any exceptions during the process, it logs the error, sends the error message to the user with custom buttons to start again ("/start").
+    """
     try:
         global users
         db = data_base.UsersDatabaseManager(config.DB_NAME)
@@ -55,14 +55,14 @@ def start(message):
         bot.send_message(message.chat.id, e, reply_markup=create_buttons("/start"))
 
 def how_name(message):
-  """
-  This how_name(message) function is a handler that processes the user's input after they have provided their name. 
-  It first checks if the content type of the message is text. 
-  If the content type is not text, it prompts the user to enter their name again by sending a message and registering the next step handler as how_name.
-  If the content type is text, it updates the user's name in the users dictionary using the user's id as the key. 
-  It then sends a message asking for the user's age and registers the next step handler as how_age to handle the user's age input.
-  In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
-  """
+    """
+    This how_name(message) function is a handler that processes the user's input after they have provided their name. 
+    It first checks if the content type of the message is text. 
+    If the content type is not text, it prompts the user to enter their name again by sending a message and registering the next step handler as how_name.
+    If the content type is text, it updates the user's name in the users dictionary using the user's id as the key. 
+    It then sends a message asking for the user's age and registers the next step handler as how_age to handle the user's age input.
+    In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
+    """
     try:
         global users
         if message.content_type != 'text':
@@ -79,14 +79,14 @@ def how_name(message):
         bot.send_message(message.chat.id, e, reply_markup=create_buttons("/start"))
 
 def how_age(message):
-  """
-  The how_age(message) function is a handler that processes the user's input after they have provided their age. 
-  It first tries to execute the code within a try block. 
-  If the content type of the message is not text, it prompts the user to enter their age again by sending a message and registering the next step handler as how_age.
-  If the content type is text, it updates the user's age in the users dictionary using the user's id as the key. 
-  It then sends a message asking for the user's gender with custom buttons for "Male" and "Female", and registers the next step handler as how_gender to handle the user's gender input.
-  In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
-  """
+    """
+    The how_age(message) function is a handler that processes the user's input after they have provided their age. 
+    It first tries to execute the code within a try block. 
+    If the content type of the message is not text, it prompts the user to enter their age again by sending a message and registering the next step handler as how_age.
+    If the content type is text, it updates the user's age in the users dictionary using the user's id as the key. 
+    It then sends a message asking for the user's gender with custom buttons for "Male" and "Female", and registers the next step handler as how_gender to handle the user's gender input.
+    In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
+    """
     try:
         global users
         if message.content_type != 'text':
@@ -103,16 +103,16 @@ def how_age(message):
         bot.send_message(message.chat.id, e, reply_markup=create_buttons("/start"))
 
 def how_gender(message):
-  """
-  The how_gender(message) function is a handler that processes the user's input after they have provided their gender. 
-  It first tries to execute the code within a try block. 
-  If the content type of the message is not text, it prompts the user to enter their gender again by sending a message and registering the next step handler as how_gender.
-  If the user's input is not "Девушка" (Girl) or "Парень" (Boy), it sends a message informing the user that the response is not valid and registers the next step handler as how_gender to re-prompt for the gender.
-  If the user's input is valid, it updates the user's gender in the users dictionary using the user's id as the key. 
-  It then sends a message asking who the user is interested in with custom buttons for "Парни" (Guys), "Девушки" (Girls), and "Всё равно" (Doesn't matter), 
-  and registers the next step handler as how_gender_interesting to handle the user's interest input.
-  In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
-  """
+    """
+    The how_gender(message) function is a handler that processes the user's input after they have provided their gender. 
+    It first tries to execute the code within a try block. 
+    If the content type of the message is not text, it prompts the user to enter their gender again by sending a message and registering the next step handler as how_gender.
+    If the user's input is not "Девушка" (Girl) or "Парень" (Boy), it sends a message informing the user that the response is not valid and registers the next step handler as how_gender to re-prompt for the gender.
+    If the user's input is valid, it updates the user's gender in the users dictionary using the user's id as the key. 
+    It then sends a message asking who the user is interested in with custom buttons for "Парни" (Guys), "Девушки" (Girls), and "Всё равно" (Doesn't matter), 
+    and registers the next step handler as how_gender_interesting to handle the user's interest input.
+    In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
+    """
     try:
         global users
         if message.content_type != 'text':
@@ -134,16 +134,16 @@ def how_gender(message):
         bot.send_message(message.chat.id, e, reply_markup=create_buttons("/start"))
 
 def how_gender_interesting(message):
-  """
-  The how_gender_interesting(message) function is a handler that processes the user's input after they have provided their gender preference. 
-  It first tries to execute the code within a try block. 
-  If the content type of the message is not text, it prompts the user to enter the gender they are interested in by sending a message and registering the next step handler as how_gender_interesting.
-  If the user's input is not "Парни" (Guys), "Девушки" (Girls), or "Всё равно" (Doesn't matter), 
-  it sends a message informing the user that the response is not valid and registers the next step handler as how_gender_interesting to re-prompt for the gender preference.
-  If the user's input is valid, it updates the user's gender search preference in the users dictionary using the user's id as the key. 
-  It then sends a message requesting the user to send one photo for their profile and registers the next step handler as how_picture to handle the photo upload.
-  In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
-  """
+    """
+    The how_gender_interesting(message) function is a handler that processes the user's input after they have provided their gender preference. 
+    It first tries to execute the code within a try block. 
+    If the content type of the message is not text, it prompts the user to enter the gender they are interested in by sending a message and registering the next step handler as how_gender_interesting.
+    If the user's input is not "Парни" (Guys), "Девушки" (Girls), or "Всё равно" (Doesn't matter), 
+    it sends a message informing the user that the response is not valid and registers the next step handler as how_gender_interesting to re-prompt for the gender preference.
+    If the user's input is valid, it updates the user's gender search preference in the users dictionary using the user's id as the key. 
+    It then sends a message requesting the user to send one photo for their profile and registers the next step handler as how_picture to handle the photo upload.
+    In case of any exceptions during the process, it logs the error, sends the error message to the user, and provides custom buttons to start the process again ("/start").
+    """
     try:
         global users
         if message.content_type != 'text':
@@ -165,15 +165,15 @@ def how_gender_interesting(message):
         bot.send_message(message.chat.id, e, reply_markup=create_buttons("/start"))
 
 def how_picture(message):
-  """
-  The how_picture(message) function is a handler that processes the user's photo upload. 
-  It begins by trying to execute the code within a try block. 
-  If the content type of the message is not a photo, it prompts the user to send a photo by sending a message and registering the next step handler as how_picture.
-  If the message contains a photo, the function saves the photo to a designated location based on the user's id. It then updates the user's profile picture in the users dictionary. 
-  A message is sent to the user asking them to write a brief description about themselves, indicating that a neural network will enhance their profile.
-  The next step handler is then registered as create_text to process the user's text input.
-  If an exception occurs during the process, the error is logged, and the user receives an error message along with custom buttons to restart the process ("/start").
-  """
+    """
+    The how_picture(message) function is a handler that processes the user's photo upload. 
+    It begins by trying to execute the code within a try block. 
+    If the content type of the message is not a photo, it prompts the user to send a photo by sending a message and registering the next step handler as how_picture.
+    If the message contains a photo, the function saves the photo to a designated location based on the user's id. It then updates the user's profile picture in the users dictionary. 
+    A message is sent to the user asking them to write a brief description about themselves, indicating that a neural network will enhance their profile.
+    The next step handler is then registered as create_text to process the user's text input.
+    If an exception occurs during the process, the error is logged, and the user receives an error message along with custom buttons to restart the process ("/start").
+    """
     try:
         global users
         if message.content_type != 'photo':
@@ -195,17 +195,17 @@ def how_picture(message):
         bot.send_message(message.chat.id, e, reply_markup=create_buttons("/start"))
 
 def create_text(message):
-  """
-  The create_text(message) function processes creating a user profile based on the text input provided by the user. 
-  It attempts to execute the code within a try block. 
-  The function calls anketas.create_anketa with various parameters including the user's ID, age, gender, picture, name, gender search preferences, user input text, chat ID, and a value of 0. 
-  The user's data is then deleted from the users dictionary.
-  If the creation of the profile is successful (status is True), a message saying "Profile successfully created" is sent to the chat. 
-  Otherwise, the function notifies the user with the text_log message and provides buttons to restart the process using create_buttons("/start").
-  The function interacts with a database (data_base.UsersDatabaseManager) to retrieve the user's profile picture and caption. 
-  It then sends the profile picture to the chat along with the caption and custom buttons for further actions such as displaying, editing, or navigating the profile.
-  In case of an exception, the error is logged using the logging module, and an error message is sent to the chat along with buttons to restart the process ("/start").
-  """
+    """
+    The create_text(message) function processes creating a user profile based on the text input provided by the user. 
+    It attempts to execute the code within a try block. 
+    The function calls anketas.create_anketa with various parameters including the user's ID, age, gender, picture, name, gender search preferences, user input text, chat ID, and a value of 0. 
+    The user's data is then deleted from the users dictionary.
+    If the creation of the profile is successful (status is True), a message saying "Profile successfully created" is sent to the chat. 
+    Otherwise, the function notifies the user with the text_log message and provides buttons to restart the process using create_buttons("/start").
+    The function interacts with a database (data_base.UsersDatabaseManager) to retrieve the user's profile picture and caption. 
+    It then sends the profile picture to the chat along with the caption and custom buttons for further actions such as displaying, editing, or navigating the profile.
+    In case of an exception, the error is logged using the logging module, and an error message is sent to the chat along with buttons to restart the process ("/start").
+    """
     try:
         status, text_log = anketas.create_anketa(message.from_user.id, users[str(message.from_user.id)]['age'], users[str(message.from_user.id)]['gender'], users[str(message.from_user.id)]['picture'], users[str(message.from_user.id)]['name'], users[str(message.from_user.id)]['gender_search'], message.text, message.chat.id, 0)
         del users[str(message.from_user.id)]
@@ -226,16 +226,16 @@ def create_text(message):
 
 @bot.message_handler(commands=['show'])
 def show_anketas(message):
-  """
-  The show_anketas function is a message handler triggered by the /show command. 
-  It retrieves user data, checks if the user has already created a profile, and prompts them to create one if not. 
-  If the user has received likes from other users, it prompts them to see the list of likes and handle confirmations.
-  It then calls anketas.show_anketa to fetch the user's profile data and displays it to the user. 
-  If the profile data retrieval is unsuccessful, an error message is sent, and buttons for further actions are provided.
-  If the user has no profile or no likes yet, appropriate messages are sent with corresponding buttons. 
-  The function updates the user's search ID and displays the user's profile picture with a caption and additional action buttons. 
-  In case of an exception during execution, the error is logged, and an error message is sent to the user.
-  """
+    """
+    The show_anketas function is a message handler triggered by the /show command. 
+    It retrieves user data, checks if the user has already created a profile, and prompts them to create one if not. 
+    If the user has received likes from other users, it prompts them to see the list of likes and handle confirmations.
+    It then calls anketas.show_anketa to fetch the user's profile data and displays it to the user. 
+    If the profile data retrieval is unsuccessful, an error message is sent, and buttons for further actions are provided.
+    If the user has no profile or no likes yet, appropriate messages are sent with corresponding buttons. 
+    The function updates the user's search ID and displays the user's profile picture with a caption and additional action buttons. 
+    In case of an exception during execution, the error is logged, and an error message is sent to the user.
+    """
     try:
         db = data_base.UsersDatabaseManager(config.DB_NAME)
         if not(db.is_in_table(message.from_user.id, 'users')):
@@ -272,13 +272,13 @@ def show_anketas(message):
         bot.send_message(message.chat.id, e)
 
 def confirm_show(message):
-  """
-  The confirm_show function is a message handler that processes user input to confirm or reject an action related to liking profiles. 
-- If the user confirms by selecting "В обязательном порядке" (meaning "In priority"), the function retrieves and displays the profile picture and caption of the liked profile. It also creates buttons for further actions, such as confirmation or rejection of the like. The user is prompted to provide an estimation after confirming.
-- If the user chooses to reject the like by selecting "Отбросить" (meaning "Discard"), the like entry is deleted from the database. The function then proceeds to show other profiles for the user to review.
-- In case of an invalid command input, an error message is sent to the user, and they are prompted to retry the action.
-- Any exceptions raised during the execution of the function are logged, and an error message is sent to the user.
-  """
+    """
+    The confirm_show function is a message handler that processes user input to confirm or reject an action related to liking profiles. 
+  - If the user confirms by selecting "В обязательном порядке" (meaning "In priority"), the function retrieves and displays the profile picture and caption of the liked profile. It also creates buttons for further actions, such as confirmation or rejection of the like. The user is prompted to provide an estimation after confirming.
+  - If the user chooses to reject the like by selecting "Отбросить" (meaning "Discard"), the like entry is deleted from the database. The function then proceeds to show other profiles for the user to review.
+  - In case of an invalid command input, an error message is sent to the user, and they are prompted to retry the action.
+  - Any exceptions raised during the execution of the function are logged, and an error message is sent to the user.
+    """
     try:
         db = data_base.UsersDatabaseManager(config.DB_NAME)
         if message.text == 'В обязательном порядке':
@@ -303,19 +303,19 @@ def confirm_show(message):
         bot.send_message(message.chat.id, e)
 
 def answ_estimation(message):
-  """
-  The answ_estimation function is an event handler that processes user input related to confirming or rejecting a like action on profiles. Here's an overview of its functionality:
-- The function attempts to interact with the database using UsersDatabaseManager from data_base module and the specified database name from the config module.
-- If the user input is a thumbs-up emoji \U0001F44D, the function performs a series of actions:
-    - It sends messages containing the profile link, specific themes, and mutual interest information with the liked user.
-    - It sends the profile photo with a caption and the link to the user.
-    - It deletes the like entry related to the user.
-    - The database connection is then closed.
-- If the user input is a thumbs-down emoji \U0001F44E, the function simply deletes the like entry without further actions.
-- If an invalid command is provided, an error message is sent to the user, and the function registers the next step handler for further interaction.
-- Finally, the function calls show_anketas(message) which presumably displays additional profiles for the user to review.
-- Any exceptions that occur during the execution are logged, and an error message is sent to the user indicating the issue.
-  """
+    """
+    The answ_estimation function is an event handler that processes user input related to confirming or rejecting a like action on profiles. Here's an overview of its functionality:
+  - The function attempts to interact with the database using UsersDatabaseManager from data_base module and the specified database name from the config module.
+  - If the user input is a thumbs-up emoji \U0001F44D, the function performs a series of actions:
+      - It sends messages containing the profile link, specific themes, and mutual interest information with the liked user.
+      - It sends the profile photo with a caption and the link to the user.
+      - It deletes the like entry related to the user.
+      - The database connection is then closed.
+  - If the user input is a thumbs-down emoji \U0001F44E, the function simply deletes the like entry without further actions.
+  - If an invalid command is provided, an error message is sent to the user, and the function registers the next step handler for further interaction.
+  - Finally, the function calls show_anketas(message) which presumably displays additional profiles for the user to review.
+  - Any exceptions that occur during the execution are logged, and an error message is sent to the user indicating the issue.
+    """
     try:
         db = data_base.UsersDatabaseManager(config.DB_NAME)
         if message.text == '\U0001F44D':
@@ -347,16 +347,16 @@ def answ_estimation(message):
         bot.send_message(message.chat.id, e)
 
 def estimation(message):
-  """
-  The estimation function processes user input related to liking or rejecting profiles in a chatbot application. Here's a summary of its functionality:
-- The function first attempts to handle different scenarios based on the user input:
-    - If the user sends a thumbs-up emoji (\U0001F44D), it interacts with the database to perform a like action on the profile associated with the user ID. It then shows additional profiles for the user to review.
-    - If the user sends a thumbs-down emoji (\U0001F44E), it simply shows the next profile for review.
-    - If the user sends a different command (like a "stop" emoji), it sends a message indicating that the mode has been exited.
-    - For any other input, it sends a message indicating an incorrect command and registers the estimation function for further input processing.
-- If an exception occurs during the execution of the function, it logs the error and sends a message to the user indicating the issue.
-Overall, the estimation function effectively manages user input related to profile liking and navigation within the chatbot application.
-  """
+    """
+    The estimation function processes user input related to liking or rejecting profiles in a chatbot application. Here's a summary of its functionality:
+  - The function first attempts to handle different scenarios based on the user input:
+      - If the user sends a thumbs-up emoji (\U0001F44D), it interacts with the database to perform a like action on the profile associated with the user ID. It then shows additional profiles for the user to review.
+      - If the user sends a thumbs-down emoji (\U0001F44E), it simply shows the next profile for review.
+      - If the user sends a different command (like a "stop" emoji), it sends a message indicating that the mode has been exited.
+      - For any other input, it sends a message indicating an incorrect command and registers the estimation function for further input processing.
+  - If an exception occurs during the execution of the function, it logs the error and sends a message to the user indicating the issue.
+  Overall, the estimation function effectively manages user input related to profile liking and navigation within the chatbot application.
+    """
     try:
         if message.text == '\U0001F44D':
             db = data_base.UsersDatabaseManager(config.DB_NAME)
@@ -381,13 +381,13 @@ Overall, the estimation function effectively manages user input related to profi
 
 @bot.message_handler(commands=['my_anketa'])
 def show_anketa(message):
-  """
-  The show_anketa function is a message handler that responds to the /my_anketa command. Here's a summary of its functionality:
-- The function first attempts to create an instance of the UsersDatabaseManager class and checks if the user's ID is in the 'users' table. If the user is not in the table, it sends a message prompting the user to create a profile by typing /start.
-- If the user is in the database, the function opens the user's photo file (indexed at position 4 in the user's data) and sends it as a photo message along with a caption (retrieved from position 7 in the user's data) to the chat. Additional buttons for actions like viewing the profile, editing the profile, or accessing credits are also included in the message.
-- In case of any exceptions during the execution of the function, it logs the error and sends a message with the error description to the chat.
-Overall, the show_anketa function handles the display of user profiles based on the /my_anketa command, interacting with the database and sending relevant information to the user in a structured format.
-  """
+    """
+    The show_anketa function is a message handler that responds to the /my_anketa command. Here's a summary of its functionality:
+  - The function first attempts to create an instance of the UsersDatabaseManager class and checks if the user's ID is in the 'users' table. If the user is not in the table, it sends a message prompting the user to create a profile by typing /start.
+  - If the user is in the database, the function opens the user's photo file (indexed at position 4 in the user's data) and sends it as a photo message along with a caption (retrieved from position 7 in the user's data) to the chat. Additional buttons for actions like viewing the profile, editing the profile, or accessing credits are also included in the message.
+  - In case of any exceptions during the execution of the function, it logs the error and sends a message with the error description to the chat.
+  Overall, the show_anketa function handles the display of user profiles based on the /my_anketa command, interacting with the database and sending relevant information to the user in a structured format.
+    """
     try:
         db = data_base.UsersDatabaseManager(config.DB_NAME)
         if not(db.is_in_table(message.from_user.id, 'users')):
@@ -404,14 +404,14 @@ Overall, the show_anketa function handles the display of user profiles based on 
 
 @bot.message_handler(commands=['edit_anketa'])
 def edit(message):
-  """
-  The edit function is a message handler triggered by the /edit_anketa command. Here's a brief description of its functionality:
-- The function starts by creating an instance of the UsersDatabaseManager class and checks if the user's ID is in the 'users' table. If the user is found in the database, their data is deleted from the database.
-- The function then clears the user's data in the users dictionary linked to their user ID.
-- Subsequently, a message "Как тебя зовут?" (translated as "What is your name?") is sent to the user's chat to prompt them for input.
-- Finally, the function registers the next step handler how_name to handle the user's response to the name inquiry. If any exceptions occur during execution, the function logs the error and sends an error message to the chat.
-Overall, the edit function handles the editing of user profiles by deleting existing data and prompting the user to provide a new name, initiating a conversation flow to update the user information when the /edit_anketa command is invoked.
-  """
+    """
+    The edit function is a message handler triggered by the /edit_anketa command. Here's a brief description of its functionality:
+  - The function starts by creating an instance of the UsersDatabaseManager class and checks if the user's ID is in the 'users' table. If the user is found in the database, their data is deleted from the database.
+  - The function then clears the user's data in the users dictionary linked to their user ID.
+  - Subsequently, a message "Как тебя зовут?" (translated as "What is your name?") is sent to the user's chat to prompt them for input.
+  - Finally, the function registers the next step handler how_name to handle the user's response to the name inquiry. If any exceptions occur during execution, the function logs the error and sends an error message to the chat.
+  Overall, the edit function handles the editing of user profiles by deleting existing data and prompting the user to provide a new name, initiating a conversation flow to update the user information when the /edit_anketa command is invoked.
+    """
     try:
         db = data_base.UsersDatabaseManager(config.DB_NAME)
         if db.is_in_table(message.from_user.id, 'users'):
@@ -426,14 +426,14 @@ Overall, the edit function handles the editing of user profiles by deleting exis
 
 @bot.message_handler(commands=['credits'])
 def credits(message):
-  """
-  This function is a message handler triggered by the /credits command.
-  It sends a message containing credits and acknowledgments about the bot creation and its contributors.
-  The message includes information about the bot's origins, participation in a Yandex Python AI course hackathon, and the names of the team members involved in the bot's development.
-  It also lists the team tracker who contributed to the bot creation.
-  The function includes a reply markup with buttons for /my_anketa, /show, /edit_anketa, and /credits commands.
-  If an exception occurs during message sending, the function logs the error and sends the error message to the chat.
-  """
+    """
+    This function is a message handler triggered by the /credits command.
+    It sends a message containing credits and acknowledgments about the bot creation and its contributors.
+    The message includes information about the bot's origins, participation in a Yandex Python AI course hackathon, and the names of the team members involved in the bot's development.
+    It also lists the team tracker who contributed to the bot creation.
+    The function includes a reply markup with buttons for /my_anketa, /show, /edit_anketa, and /credits commands.
+    If an exception occurs during message sending, the function logs the error and sends the error message to the chat.
+    """
     try:
         bot.send_message(message.chat.id, "2024 © Бот знакомств Da_Tot\n\nБот был сделан для хакатона на курсе Python ИИ от Яндекса\nпрограммы «Код будущего».\n\nУчастие в создании бота принимали:\n\n  — Егор Бекренев (KocoyBot)\n\n  — Алексей Смирнов (kzttynxvxrdzxs)\n\n — Матвей Дорошкевич (fatpigmat)\n\nТрекер команды:\n\n  — Илья Заворотный (vompie)", reply_markup=create_buttons("/my_anketa", '/show', '/edit_anketa', '/credits'))
     except Exception as e:
