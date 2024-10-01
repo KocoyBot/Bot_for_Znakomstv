@@ -38,14 +38,14 @@ def show_anketa(user_id, age, gender, gender_search):
         db = data_base.UsersDatabaseManager(config.DB_NAME)
         if gender == 'Парень':
             if gender_search == 'Парни':
-                result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE (`age` = ? OR `age` = ? OR `age` = ?) AND `gender` = 'Парень' AND `gender_search` = 'Парни' AND `id_tg` <> ? ORDER BY RANDOMOM() LIMIT 1", (age, age+1, age-1, user_id,))
+                result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE (`age` = ? OR `age` = ? OR `age` = ?) AND `gender` = 'Парень' AND `gender_search` = 'Парни' AND `id_tg` <> ? ORDER BY RANDOM() LIMIT 1", (age, age+1, age-1, user_id,))
             elif gender_search == 'Девушки':
                 result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE (`age` = ? OR `age` = ? OR `age` = ?) AND `gender` = 'Девушка' AND `gender_search` = 'Парни' AND `id_tg` <> ? ORDER BY RANDOM() LIMIT 1", (age, age+1, age-1, user_id,))
             elif gender_search == 'Всё равно':
                 result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE (`age` = ? OR `age` = ? OR `age` = ?) AND `gender_search` = 'Всё равно' AND `id_tg` <> ? ORDER BY RANDOM() LIMIT 1", (age, age+1, age-1, user_id,))
         elif gender == 'Девушка':
             if gender_search == 'Парни':
-                result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE (`age` = ? OR `age` = '? OR `age` = ?) AND `gender` = 'Парень' AND `gender_search` = 'Девушки' AND `id_tg` <> ? ORDER BY RANDOM() LIMIT 1", (age, age+1, age-1, user_id,))
+                result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE (`age` = ? OR `age` = ? OR `age` = ?) AND `gender` = 'Парень' AND `gender_search` = 'Девушки' AND `id_tg` <> ? ORDER BY RANDOM() LIMIT 1", (age, age+1, age-1, user_id,))
             elif gender_search == 'Девушки':
                 result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE (`age` = ? OR `age` = ? OR `age` = ?) AND `gender` = 'Девушка' AND `gender_search` = 'Девушки' AND `id_tg` <> ? ORDER BY RANDOM() LIMIT 1", (age, age+1, age-1, user_id,))
             elif gender_search == 'Всё равно':
