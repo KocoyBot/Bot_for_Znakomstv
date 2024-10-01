@@ -40,16 +40,19 @@ def start(message):
     In case of any exceptions during the process, it logs the error, sends the error message to the user with custom buttons to start again ("/start").
     """
     try:
-        global users
-        db = data_base.UsersDatabaseManager(config.DB_NAME)
-        if db.is_in_table(message.from_user.id, 'users'):
-            del db
-            bot.send_message(message.chat.id, "Продолжай пользоваться ботом", reply_markup=create_buttons('/my_anketa', '/show', '/edit_anketa', '/credits'))
-            return
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            global users
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if db.is_in_table(message.from_user.id, 'users'):
+                del db
+                bot.send_message(message.chat.id, "Продолжай пользоваться ботом", reply_markup=create_buttons('/my_anketa', '/show', '/edit_anketa', '/credits'))
+                return
 
-        users[str(message.from_user.id)] = {}
-        bot.send_message(message.chat.id, "Здравствуй, давай создадим тебе анкету. Как тебя зовут?")
-        bot.register_next_step_handler(message, how_name)
+            users[str(message.from_user.id)] = {}
+            bot.send_message(message.chat.id, "Здравствуй, давай создадим тебе анкету. Как тебя зовут?", reply_markup=types.ReplyKeyboardRemove())
+            bot.register_next_step_handler(message, how_name)
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
     except Exception as e:
         logging.error(e)
         bot.send_message(message.chat.id, e, reply_markup=create_buttons("/start"))
@@ -67,11 +70,11 @@ def how_name(message):
         global users
         if message.content_type != 'text':
             bot.send_message(message.chat.id, "Введи своё имя")
-            bot.register_next_step_handler(message, how_name)
+            bot.register_next_step_handler(message, how_name, reply_markup=types.ReplyKeyboardRemove())
             return
         
         users[str(message.from_user.id)]['name'] = message.text
-        bot.send_message(message.chat.id, "Хорошо, сколько тебе лет?")
+        bot.send_message(message.chat.id, "Хорошо, сколько тебе лет?", reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, how_age)
 
     except Exception as e:
@@ -91,7 +94,7 @@ def how_age(message):
         global users
         if message.content_type != 'text':
             bot.send_message(message.chat.id, "Введи свой возраст")
-            bot.register_next_step_handler(message, how_age)
+            bot.register_next_step_handler(message, how_age, reply_markup=types.ReplyKeyboardRemove())
             return
         
         users[str(message.from_user.id)]['age'] = message.text
@@ -116,12 +119,12 @@ def how_gender(message):
     try:
         global users
         if message.content_type != 'text':
-            bot.send_message(message.chat.id, "Введи свой пол")
+            bot.send_message(message.chat.id, "Введи свой пол", reply_markup=create_buttons('Парень', 'Девушка'))
             bot.register_next_step_handler(message, how_gender)
             return
         
         elif message.text != 'Девушка' and message.text != 'Парень':
-            bot.send_message(message.chat.id, "Нет такого варианта ответа")
+            bot.send_message(message.chat.id, "Нет такого варианта ответа", reply_markup=create_buttons('Парень', 'Девушка'))
             bot.register_next_step_handler(message, how_gender)
             return
         
@@ -157,7 +160,7 @@ def how_gender_interesting(message):
             return
         
         users[str(message.from_user.id)]['gender_search'] = message.text
-        bot.send_message(message.chat.id, "Хорошо, пришли одно фото для анкеты")
+        bot.send_message(message.chat.id, "Хорошо, пришли одно фото для анкеты", reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, how_picture)
 
     except Exception as e:
@@ -177,7 +180,7 @@ def how_picture(message):
     try:
         global users
         if message.content_type != 'photo':
-            bot.send_message(message.chat.id, "Пришли фото")
+            bot.send_message(message.chat.id, "Пришли фото", reply_markup=types.ReplyKeyboardRemove())
             bot.register_next_step_handler(message, how_picture)
             return
         
@@ -187,7 +190,7 @@ def how_picture(message):
             new_file.write(bot.download_file(bot.get_file(message.photo[-1].file_id).file_path))
         
         users[str(message.from_user.id)]['picture'] = src
-        bot.send_message(message.chat.id, "Хорошо, напиши немного а себе, а нейросеть подукрасит анкету")
+        bot.send_message(message.chat.id, "Хорошо, напиши немного а себе, а нейросеть подукрасит анкету", reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, create_text)
 
     except Exception as e:
@@ -237,36 +240,39 @@ def show_anketas(message):
     In case of an exception during execution, the error is logged, and an error message is sent to the user.
     """
     try:
-        db = data_base.UsersDatabaseManager(config.DB_NAME)
-        if not(db.is_in_table(message.from_user.id, 'users')):
-            bot.send_message(message.chat.id, "Создай анкету, пропиши /start", reply_markup=create_buttons('start'))
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if not(db.is_in_table(message.from_user.id, 'users')):
+                bot.send_message(message.chat.id, "Создай анкету, пропиши /start", reply_markup=create_buttons('start'))
+                del db
+                return
+            
+            if len(db.execute_cursor(f"SELECT `id` FROM `likes` WHERE `id_search` = ?", (message.from_user.id,))) > 0:
+                bot.send_message(message.chat.id, "Вас лайкнуло " + str(len(db.execute_cursor(f"SELECT `id` FROM `likes` WHERE `id_search` = ?", (message.from_user.id,)))) + " человек. Показать?", reply_markup=create_buttons('В обязательном порядке', 'Отбросить'))
+                del db
+                bot.register_next_step_handler(message, confirm_show)
+                return
+
+            status, result = anketas.show_anketa(message.from_user.id, db.get_data(message.from_user.id)[2], db.get_data(message.from_user.id)[3], db.get_data(message.from_user.id)[6])
             del db
-            return
-        
-        if len(db.execute_cursor(f"SELECT `id` FROM `likes` WHERE `id_search` = ?", (message.from_user.id,))) > 0:
-            bot.send_message(message.chat.id, "Вас лайкнуло " + str(len(db.execute_cursor(f"SELECT `id` FROM `likes` WHERE `id_search` = ?", (message.from_user.id,)))) + " человек. Показать?", reply_markup=create_buttons('В обязательном порядке', 'Отбросить'))
+
+            if not(status):
+                bot.send_message(message.chat.id, result, reply_markup=create_buttons('/my_anketa', '/show', '/edit_anketa', '/credits'))
+                return
+            
+            if len(result) == 0:
+                bot.send_message(message.chat.id, "Анкет нема", reply_markup=create_buttons('/my_anketa', '/show', '/edit_anketa', '/credits'))
+                return
+
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            db.execute_cursor(f"UPDATE `users` SET `user_id_search` = ? WHERE `id_tg` = ?", (result[2], message.from_user.id,))
             del db
-            bot.register_next_step_handler(message, confirm_show)
-            return
 
-        status, result = anketas.show_anketa(message.from_user.id, db.get_data(message.from_user.id)[2], db.get_data(message.from_user.id)[3], db.get_data(message.from_user.id)[6])
-        del db
-
-        if not(status):
-            bot.send_message(message.chat.id, result, reply_markup=create_buttons('/my_anketa', '/show', '/edit_anketa', '/credits'))
-            return
-        
-        if len(result) == 0:
-            bot.send_message(message.chat.id, "Анкет нема", reply_markup=create_buttons('/my_anketa', '/show', '/edit_anketa', '/credits'))
-            return
-
-        db = data_base.UsersDatabaseManager(config.DB_NAME)
-        db.execute_cursor(f"UPDATE `users` SET `user_id_search` = ? WHERE `id_tg` = ?", (result[2], message.from_user.id,))
-        del db
-
-        with open(result[0], 'rb') as ph:
-            bot.send_photo(message.chat.id, ph, caption=result[1], reply_markup=create_buttons('\U0001F44D', '\U0001F44E', '\U0001F4AB'))
-        bot.register_next_step_handler(message, estimation)
+            with open(result[0], 'rb') as ph:
+                bot.send_photo(message.chat.id, ph, caption=result[1], reply_markup=create_buttons('\U0001F44D', '\U0001F44E', '\U0001F4AB'))
+            bot.register_next_step_handler(message, estimation)
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
     except Exception as e:
         logging.error(e)
         bot.send_message(message.chat.id, e)
@@ -280,23 +286,26 @@ def confirm_show(message):
   - Any exceptions raised during the execution of the function are logged, and an error message is sent to the user.
     """
     try:
-        db = data_base.UsersDatabaseManager(config.DB_NAME)
-        if message.text == 'В обязательном порядке':
-            with open(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[4], 'rb') as ph:
-                bot.send_photo(message.chat.id, ph, caption=db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], reply_markup=create_buttons('\U0001F44D', '\U0001F44E'))
-                bot
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if message.text == 'В обязательном порядке':
+                with open(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[4], 'rb') as ph:
+                    bot.send_photo(message.chat.id, ph, caption=db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], reply_markup=create_buttons('\U0001F44D', '\U0001F44E'))
+                    
 
-            bot.register_next_step_handler(message, answ_estimation)
+                bot.register_next_step_handler(message, answ_estimation)
 
-        elif message.text == 'Отбросить':
-            db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ?", (message.from_user.id,))
-            del db
+            elif message.text == 'Отбросить':
+                db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ?", (message.from_user.id,))
+                del db
 
-            show_anketas(message)
+                show_anketas(message)
 
+            else:
+                bot.send_message(message.chat.id, "Неверная команда")
+                bot.register_next_step_handler(message, answ_estimation)
         else:
-            bot.send_message(message.chat.id, "Неверная команда")
-            bot.register_next_step_handler(message, answ_estimation)
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
 
     except Exception as e:
         logging.error(e)
@@ -317,29 +326,34 @@ def answ_estimation(message):
   - Any exceptions that occur during the execution are logged, and an error message is sent to the user indicating the issue.
     """
     try:
-        db = data_base.UsersDatabaseManager(config.DB_NAME)
-        if message.text == '\U0001F44D':
-            bot.send_message(message.chat.id, "Ссылка на этого пользователя: t.me/" + bot.get_chat_member(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0], db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0]).user.username)
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if message.text == '\U0001F44D':
+                themes = anketas.themes(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], db.get_data(message.from_user.id)[7])
 
-            bot.send_message(message.chat.id, anketas.themes(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], db.get_data(message.from_user.id)[7]))
+                bot.send_message(message.chat.id, "Ссылка на этого пользователя: t.me/" + bot.get_chat_member(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0], db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0]).user.username)
 
-            with open(db.get_data(message.from_user.id)[4], 'rb') as ph:
-                bot.send_photo(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], ph, caption=db.get_data(message.from_user.id)[7] + "\n\nВзаимная симпатия с этим пользователем. Ссылка на него: t.me/" + bot.get_chat_member(message.from_user.id, message.from_user.id).user.username)
+                bot.send_message(message.chat.id, themes, reply_markup=create_buttons('/my_anketa', '/show', '/edit_anketa', '/credits'))
 
-            bot.send_message(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], anketas.themes(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], db.get_data(message.from_user.id)[7]))
+                with open(db.get_data(message.from_user.id)[4], 'rb') as ph:
+                    bot.send_photo(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], ph, caption=db.get_data(message.from_user.id)[7] + "\n\nВзаимная симпатия с этим пользователем. Ссылка на него: t.me/" + bot.get_chat_member(message.from_user.id, message.from_user.id).user.username, reply_markup=create_buttons('\U0001F44D', '\U0001F44E', '\U0001F4AB'))
 
-            db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ? AND `id_tg` = ?", (message.from_user.id, str(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id))[0])))
-            del db
-            
-        elif message.text == '\U0001F44E':
-            db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ? AND `id_tg` = ?", (message.from_user.id, str(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id))[0])))
-            del db
+                bot.send_message(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], themes)
 
+                db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ? AND `id_tg` = ?", (message.from_user.id, str(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])))
+                del db
+                
+            elif message.text == '\U0001F44E':
+                db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ? AND `id_tg` = ?", (message.from_user.id, str(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])))
+                del db
+
+            else:
+                del db
+                bot.send_message(message.chat.id, "Неверная команда")
+                bot.register_next_step_handler(message, answ_estimation)
+                return
         else:
-            del db
-            bot.send_message(message.chat.id, "Неверная команда")
-            bot.register_next_step_handler(message, answ_estimation)
-            return
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
 
         show_anketas(message)
     except Exception as e:
@@ -358,22 +372,25 @@ def estimation(message):
   Overall, the estimation function effectively manages user input related to profile liking and navigation within the chatbot application.
     """
     try:
-        if message.text == '\U0001F44D':
-            db = data_base.UsersDatabaseManager(config.DB_NAME)
-            anketas.like(message.from_user.id, db.get_data(message.from_user.id)[9])
-            del db
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            if message.text == '\U0001F44D':
+                db = data_base.UsersDatabaseManager(config.DB_NAME)
+                anketas.like(message.from_user.id, db.get_data(message.from_user.id)[9])
+                del db
 
-            show_anketas(message)
+                show_anketas(message)
+                
+            elif message.text == '\U0001F44E':
+                show_anketas(message)
+
+            elif message.text == '\U0001F4AB':
+                bot.send_message(message.chat.id, "Вышел из режима поиска людей", reply_markup=create_buttons("/my_anketa", '/show', '/edit_anketa', '/credits'))
             
-        elif message.text == '\U0001F44E':
-            show_anketas(message)
-
-        elif message.text == '\U0001F4AB':
-            bot.send_message(message.chat.id, "Вышел из режима поиска людей", reply_markup=create_buttons("/my_anketa", '/show', '/edit_anketa', '/credits'))
-        
+            else:
+                bot.send_message(message.chat.id, "Неверная команда")
+                bot.register_next_step_handler(message, estimation)
         else:
-            bot.send_message(message.chat.id, "Неверная команда")
-            bot.register_next_step_handler(message, estimation)
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
 
     except Exception as e:
         logging.error(e)
@@ -389,15 +406,18 @@ def show_anketa(message):
   Overall, the show_anketa function handles the display of user profiles based on the /my_anketa command, interacting with the database and sending relevant information to the user in a structured format.
     """
     try:
-        db = data_base.UsersDatabaseManager(config.DB_NAME)
-        if not(db.is_in_table(message.from_user.id, 'users')):
-            bot.send_message(message.chat.id, "Создай анкету, пропиши /start", reply_markup=create_buttons('start'))
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if not(db.is_in_table(message.from_user.id, 'users')):
+                bot.send_message(message.chat.id, "Создай анкету, пропиши /start", reply_markup=create_buttons('start'))
+                del db
+                return
+            
+            with open(db.get_data(message.from_user.id)[4], 'rb') as ph:
+                bot.send_photo(message.chat.id, ph, caption=db.get_data(message.from_user.id)[7], reply_markup=create_buttons("/my_anketa", '/show', '/edit_anketa', '/credits'))
             del db
-            return
-        
-        with open(db.get_data(message.from_user.id)[4], 'rb') as ph:
-            bot.send_photo(message.chat.id, ph, caption=db.get_data(message.from_user.id)[7], reply_markup=create_buttons("/my_anketa", '/show', '/edit_anketa', '/credits'))
-        del db
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
     except Exception as e:
         logging.error(e)
         bot.send_message(message.chat.id, e)
@@ -413,13 +433,16 @@ def edit(message):
   Overall, the edit function handles the editing of user profiles by deleting existing data and prompting the user to provide a new name, initiating a conversation flow to update the user information when the /edit_anketa command is invoked.
     """
     try:
-        db = data_base.UsersDatabaseManager(config.DB_NAME)
-        if db.is_in_table(message.from_user.id, 'users'):
-            db.delete_data(message.from_user.id)
-        del db
-        users[str(message.from_user.id)] = {}
-        bot.send_message(message.chat.id, "Как тебя зовут?")
-        bot.register_next_step_handler(message, how_name)
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if db.is_in_table(message.from_user.id, 'users'):
+                db.delete_data(message.from_user.id)
+            del db
+            users[str(message.from_user.id)] = {}
+            bot.send_message(message.chat.id, "Как тебя зовут?")
+            bot.register_next_step_handler(message, how_name)
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
     except Exception as e:
         logging.error(e)
         bot.send_message(message.chat.id, e)
@@ -435,7 +458,10 @@ def credits(message):
     If an exception occurs during message sending, the function logs the error and sends the error message to the chat.
     """
     try:
-        bot.send_message(message.chat.id, "2024 © Бот знакомств Da_Tot\n\nБот был сделан для хакатона на курсе Python ИИ от Яндекса\nпрограммы «Код будущего».\n\nУчастие в создании бота принимали:\n\n  — Егор Бекренев (KocoyBot)\n\n  — Алексей Смирнов (kzttynxvxrdzxs)\n\n — Матвей Дорошкевич (fatpigmat)\n\nТрекер команды:\n\n  — Илья Заворотный (vompie)", reply_markup=create_buttons("/my_anketa", '/show', '/edit_anketa', '/credits'))
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            bot.send_message(message.chat.id, "2024 © Бот знакомств Da_Tot\n\nБот был сделан для хакатона на курсе Python ИИ от Яндекса\nпрограммы «Код будущего».\n\nУчастие в создании бота принимали:\n\n  — Егор Бекренев (KocoyBot)\n\n  — Алексей Смирнов (kzttynxvxrdzxs)\n\n — Матвей Дорошкевич (fatpigmat)\n\nТрекер команды:\n\n  — Илья Заворотный (vompie)", reply_markup=create_buttons("/my_anketa", '/show', '/edit_anketa', '/credits'))
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
     except Exception as e:
         logging.error(e)
         bot.send_message(message.chat.id, e)
