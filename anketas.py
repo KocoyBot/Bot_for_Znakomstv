@@ -57,6 +57,36 @@ def show_anketa(user_id, age, gender, gender_search):
         logging.error(e)
         return False, e
     
+def show_anketa_all_category(user_id):
+    """
+    Retrieves a random user profile (picture, text, and Telegram ID) from the 
+    database, excluding the profile of the specified user. 
+    The function establishes a connection to the UsersDatabase, executes a 
+    SQL query to select a random entry where the Telegram ID is not the same 
+    as the provided user_id, and returns the result.
+
+    Parameters:
+    user_id (str): The Telegram ID of the user whose profile is to be excluded 
+    from the query.
+
+    Returns:
+    tuple: A tuple containing a boolean indicating success or failure, 
+    and either the query result (on success) or an exception (on 
+    failure).
+
+    It logs a success message if the operation is successful and an error 
+    message if an exception occurs.
+    """
+    try:
+        db = data_base.UsersDatabaseManager(config.DB_NAME)
+        result = db.execute_cursor(f"SELECT `picture`, `text`, `id_tg` FROM `users` WHERE `id_tg` <> ? ORDER BY RANDOM() LIMIT 1", (user_id,))
+        logging.info("Успех")
+        del db
+        return True, result
+    except Exception as e:
+        logging.error(e)
+        return False, e
+    
 def like(user_id, user_id_search):
     """
     This like function attempts to insert a like action between two users into a database table named "likes". 
