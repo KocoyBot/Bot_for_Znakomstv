@@ -302,7 +302,7 @@ Error handling is implemented to log any exceptions that occur during execution.
             if len(db.execute_cursor(f"SELECT `id` FROM `likes` WHERE `id_search` = ?", (message.from_user.id,))) > 0:
                 bot.send_message(message.chat.id, "Вас лайкнуло " + str(len(db.execute_cursor(f"SELECT `id` FROM `likes` WHERE `id_search` = ?", (message.from_user.id,)))) + " человек. Показать?", reply_markup=create_buttons('В обязательном порядке', 'Отбросить'))
                 del db
-                bot.register_next_step_handler(message, confirm_show)
+                bot.register_next_step_handler(message, confirm_show_sec)
                 return
 
             status, result = anketas.show_anketa_all_category(message.from_user.id)
@@ -322,7 +322,7 @@ Error handling is implemented to log any exceptions that occur during execution.
 
             with open(result[0], 'rb') as ph:
                 bot.send_photo(message.chat.id, ph, caption=result[1], reply_markup=create_buttons('\U0001F44D', '\U0001F44E', '\U0001F4AB'))
-            bot.register_next_step_handler(message, estimation)
+            bot.register_next_step_handler(message, estimation_sec)
         else:
             bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
     except Exception as e:
@@ -355,7 +355,41 @@ def confirm_show(message):
 
             else:
                 bot.send_message(message.chat.id, "Неверная команда")
-                bot.register_next_step_handler(message, answ_estimation)
+                bot.register_next_step_handler(message, confirm_show)
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
+
+    except Exception as e:
+        logging.error(e)
+        bot.send_message(message.chat.id, e)
+
+def confirm_show_sec(message):
+    """
+    The confirm_show function is a message handler that processes user input to confirm or reject an action related to liking profiles. 
+  - If the user confirms by selecting "В обязательном порядке" (meaning "In priority"), the function retrieves and displays the profile picture and caption of the liked profil>
+  - If the user chooses to reject the like by selecting "Отбросить" (meaning "Discard"), the like entry is deleted from the database. The function then proceeds to show other >
+  - In case of an invalid command input, an error message is sent to the user, and they are prompted to retry the action.
+  - Any exceptions raised during the execution of the function are logged, and an error message is sent to the user.
+    """
+    try:
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if message.text == 'В обязательном порядке':
+                with open(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[4], 'rb') as ph:
+                    bot.send_photo(message.chat.id, ph, caption=db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], reply_markup=create_buttons('\U0001F44D', '\U0001F44E'))
+                    
+
+                bot.register_next_step_handler(message, answ_estimation_sec)
+
+            elif message.text == 'Отбросить':
+                db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ?", (message.from_user.id,))
+                del db
+
+                show_any_anketa(message)
+
+            else:
+                bot.send_message(message.chat.id, "Неверная команда")
+                bot.register_next_step_handler(message, confirm_show_sec)
         else:
             bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
 
@@ -412,6 +446,53 @@ def answ_estimation(message):
         logging.error(e)
         bot.send_message(message.chat.id, e)
 
+def answ_estimation_sec(message):
+    """
+    The answ_estimation function is an event handler that processes user input related to confirming or rejecting a like action on profiles. Here's an overview of its function>
+  - The function attempts to interact with the database using UsersDatabaseManager from data_base module and the specified database name from the config module.
+  - If the user input is a thumbs-up emoji \U0001F44D, the function performs a series of actions:
+      - It sends messages containing the profile link, specific themes, and mutual interest information with the liked user.
+      - It sends the profile photo with a caption and the link to the user.
+      - It deletes the like entry related to the user.
+      - The database connection is then closed.
+  - If the user input is a thumbs-down emoji \U0001F44E, the function simply deletes the like entry without further actions.
+  - If an invalid command is provided, an error message is sent to the user, and the function registers the next step handler for further interaction.
+  - Finally, the function calls show_anketas(message) which presumably displays additional profiles for the user to review.
+  - Any exceptions that occur during the execution are logged, and an error message is sent to the user indicating the issue.
+    """
+    try:
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            db = data_base.UsersDatabaseManager(config.DB_NAME)
+            if message.text == '\U0001F44D':
+                themes = anketas.themes(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[7], db.get_data(message.from_user.id)[7])
+
+                bot.send_message(message.chat.id, "Ссылка на этого пользователя: t.me/" + bot.get_chat_member(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0], db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0]).user.username)
+
+                bot.send_message(message.chat.id, themes, reply_markup=create_buttons('/my_anketa', '/show', '/show_any_anketa', '/edit_anketa', '/credits'))
+
+                with open(db.get_data(message.from_user.id)[4], 'rb') as ph:
+                    bot.send_photo(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], ph, caption=db.get_data(message.from_user.id)[7] + "\n\nВзаимная симпатия с этим пользователем. Ссылка на него: t.me/" + bot.get_chat_member(message.from_user.id, message.from_user.id).user.username, reply_markup=create_buttons('\U0001F44D', '\U0001F44E', '\U0001F4AB'))
+
+                bot.send_message(db.get_data(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])[8], themes)
+
+                db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ? AND `id_tg` = ?", (message.from_user.id, str(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])))
+                del db
+            elif message.text == '\U0001F44E':
+                db.execute_cursor(f"DELETE FROM `likes` WHERE `id_search` = ? AND `id_tg` = ?", (message.from_user.id, str(db.execute_cursor(f"SELECT `id_tg` FROM `likes` WHERE `id_search` = ? LIMIT 1", (message.from_user.id,))[0])))
+                del db
+            else:
+                del db
+                bot.send_message(message.chat.id, "Неверная команда")
+                bot.register_next_step_handler(message, answ_estimation_sec)
+                return
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
+
+        show_any_anketa(message)
+    except Exception as e:
+        logging.error(e)
+        bot.send_message(message.chat.id, e)
+
 def estimation(message):
     """
     The estimation function processes user input related to liking or rejecting profiles in a chatbot application. Here's a summary of its functionality:
@@ -441,6 +522,40 @@ def estimation(message):
             else:
                 bot.send_message(message.chat.id, "Неверная команда")
                 bot.register_next_step_handler(message, estimation)
+        else:
+            bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
+
+    except Exception as e:
+        logging.error(e)
+        bot.send_message(message.chat.id, e)
+
+def estimation_sec(message):
+    """
+    The estimation function processes user input related to liking or rejecting profiles in a chatbot application. Here's a summary of its functionality:
+  - The function first attempts to handle different scenarios based on the user input:
+      - If the user sends a thumbs-up emoji (\U0001F44D), it interacts with the database to perform a like action on the profile associated with the user ID. It then shows add>      - If the user sends a thumbs-down emoji (\U0001F44E), it simply shows the next profile for review.
+      - If the user sends a different command (like a "stop" emoji), it sends a message indicating that the mode has been exited.
+      - For any other input, it sends a message indicating an incorrect command and registers the estimation function for further input processing.
+  - If an exception occurs during the execution of the function, it logs the error and sends a message to the user indicating the issue.
+  Overall, the estimation function effectively manages user input related to profile liking and navigation within the chatbot application.
+    """
+    try:
+        if bot.get_chat_member(message.from_user.id, message.from_user.id).user.username != None:
+            if message.text == '\U0001F44D':
+                db = data_base.UsersDatabaseManager(config.DB_NAME)
+                anketas.like(message.from_user.id, db.get_data(message.from_user.id)[9])
+                del db
+
+                show_any_anketa(message)
+
+            elif message.text == '\U0001F44E':
+                show_any_anketa(message)
+
+            elif message.text == '\U0001F4AB':
+                bot.send_message(message.chat.id, "Вышел из режима поиска людей", reply_markup=create_buttons('/my_anketa', '/show', '/show_any_anketa', '/edit_anketa', '/credits'))
+            else:
+                bot.send_message(message.chat.id, "Неверная команда")
+                bot.register_next_step_handler(message, estimation_sec)
         else:
             bot.send_message(message.chat.id, "У тебя отсутствует имя пользователя телеграмм")
 
